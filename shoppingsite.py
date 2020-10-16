@@ -7,7 +7,7 @@ Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
 from flask import Flask, render_template, redirect, flash, session
-import jinja2
+import jinja2 
 
 import melons
 
@@ -59,29 +59,36 @@ def show_melon(melon_id):
 def show_shopping_cart():
     """Display content of shopping cart."""
 
-    # Get the cart dictionary:
-
-    cart = session.get('cart', {})
-
-    # TODO: Display the contents of the shopping cart.
-
-    # The logic here will be something like:
-    #
-    # - get the cart dictionary from the session
     # - create a list to hold melon objects and a variable to hold the total
     #   cost of the order
+    order_total = 0
+    melons_in_cart = []
+
+    # - get the cart dictionary from the session
+    cart = session.get('cart', {})
+
     # - loop over the cart dictionary, and for each melon id:
+    for melon_id, quantity in cart.items():
+    
     #    - get the corresponding Melon object
+        melon = melons.get_by_id(melon_id)
+
     #    - compute the total cost for that type of melon
     #    - add this to the order total
-    #    - add quantity and total cost as attributes on the Melon object
-    #    - add the Melon object to the list created above
-    # - pass the total order cost and the list of Melon objects to the template
-    #
-    # Make sure your function can also handle the case wherein no cart has
-    # been added to the session
+        total_cost = melon.price * quantity
+        order_total += total_cost
 
-    return render_template("cart.html")
+    #    - add quantity and total cost as attributes on the Melon object
+        melon.quantity = quantity
+        melon.total_cost = total_cost
+
+    #    - add the Melon object to the list created above
+        melons_in_cart.append(melon)
+
+    # - pass the total order cost and the list of Melon objects to the template
+    return render_template("cart.html", cart=melons_in_cart, order_total=order_total)
+
+
 
 
 @app.route("/add_to_cart/<melon_id>")
